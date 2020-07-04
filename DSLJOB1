@@ -1,0 +1,51 @@
+job("JOB1"){
+	description("First DSL job")
+
+	scm{
+		github('BalancePlay/WebRepo', 'master')
+	    }
+
+	triggers {
+		githubPush()
+	}
+	steps {
+		shell(''' cp -v * /webcode
+                  cd /webcode
+		          if [[ $(ls -t1 | head -n 1) == *index.html* ]]
+		          then
+			      if kubectl get pods | grep htmlos 
+			      then	
+			      echo "Already Running"
+			      else
+				  kubectl create -f /pvc.yml
+				  kubectl create -f /pod.yml
+			      sleep 10
+                  kubectl cp /webcode/index.html default/htmlos:/usr/local/apache2/htdocs
+                  fi
+                  fi
+		          if kubectl get svc | grep htmlexpose
+		          then
+			      echo "Already Exposed"
+		          else
+                  kubectl create -f /htmlsvc.yml
+                  fi
+                  if [[ $(ls -t1 | head -n 1) == *index.php* ]]
+		          then
+			      if kubectl get pods | grep phpos 
+			      then	
+			      echo "Already Running"
+			      else
+				  kubectl create -f /pvc1.yml
+				  kubectl create -f /pod1.yml
+			      sleep 10
+                  kubectl cp /webcode/index.php default/os:/var/www/html
+                  fi
+                  fi
+		          if kubectl get svc | grep phpexpose
+		          then
+			      echo "Already Exposed"
+		          else
+                  kubectl create -f /phpsvc.yml
+                  fi ''')
+	}
+}
