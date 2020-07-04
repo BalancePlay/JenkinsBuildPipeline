@@ -1,0 +1,31 @@
+job("JOB2"){
+	steps {
+		shell(''' 
+                  
+                  cd /webcode
+		          if [[ $(ls -t1 | head -n 1) == *index.html* ]]
+		          then
+			      y=$(curl -o /dev/null -s -w "%{http_code}" 192.168.99.100:31111) 
+			      if [[ $y == 200 ]]
+                  then	
+			      exit 0
+			      else
+				  exit 1
+                  fi
+                  fi
+                  if [[ $(ls -t1 | head -n 1) == *index.php* ]]
+		          then
+			      y=$(curl -o /dev/null -s -w "%{http_code}" 192.168.99.100:31112) 
+			      if [[ $y == 200 ]]
+                  then	
+			      exit 0
+			      else
+				  exit 1
+                  fi
+                  fi
+		          if [[ $(ls -t1 | head -n 1) != *index.html* && $(ls -t1 | head -n 1) != *index.php* ]]
+                  then
+                  exit 1
+                  fi  ''')
+	}
+}
